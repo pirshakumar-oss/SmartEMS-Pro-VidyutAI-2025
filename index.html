@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartEMS Pro - VidyutAI Hackathon 2025</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #06b6d4;
+            --ev-primary: #3b82f6;
+            --bms-warning: #f59e0b;
+            --ai-color: #8b5cf6;
+            --fire-color: #ff6b35;
+            --dark: #1f2937;
+            --darker: #111827;
+            --rl-color: #ec4899;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .bms-card {
+            border-left: 4px solid var(--bms-warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .ev-card {
+            border-left: 4px solid var(--ev-primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .ai-card {
+            border-left: 4px solid var(--ai-color);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .fire-card {
+            border-left: 4px solid var(--fire-color);
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .rl-card {
+            border-left: 4px solid var(--rl-color);
+            background: rgba(236, 72, 153, 0.05);
+        }
+
+        .emergency-active {
+            background: linear-gradient(45deg, #ff4444, #ffaaaa) !important;
+            animation: emergencyPulse 1s infinite;
+        }
+
+        @keyframes emergencyPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .health-indicator {
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .cell-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 1px;
+        }
+
+        .cell-normal { background: var(--secondary); }
+        .cell-warning { background: var(--warning); }
+        .cell-critical {
+            background: var(--danger);
+            animation: criticalPulse 1s infinite;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        @keyframes criticalPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .charging-session {
+            border-left: 3px solid var(--ev-primary);
+            background: rgba(59, 130, 246, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .learning-pulse {
+            animation: learningPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes learningPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 10px auto;
+        }
+
+        .energy-flow {
+            stroke-dasharray: 5;
+            animation: flowAnimation 2s linear infinite;
+        }
+
+        @keyframes flowAnimation {
+            to { stroke-dashoffset: -10; }
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .sensor-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .data-streaming {
+            border: 2px solid #10b981;
+            animation: streamPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes streamPulse {
+            0%, 100% { border-color: #10b981; }
+            50% { border-color: #34d399; }
+        }
+
+        .rl-recommendation {
+            border-left: 4px solid var(--rl-color);
+            background: rgba(236, 72, 153, 0.1);
+        }
+
+        .cloud-connected {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+        }
+
+        /* Emergency Visual Effects */
+        .emergency-flash {
+            animation: emergencyFlash 0.8s infinite alternate;
+        }
+
+        @keyframes emergencyFlash {
+            0% { color: #ffffff; }
+            100% { color: #ef4444; }
+        }
+
+        .emergency-mode {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5) !important;
+        }
+
+        .emergency-active .glass-card {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+
+        /* Critical value indicators */
+        .health-indicator.bg-danger {
+            background: linear-gradient(90deg, #ef4444, #f87171) !important;
+            animation: emergencyPulseBar 1s infinite;
+        }
+
+        @keyframes emergencyPulseBar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Emergency Banner -->
+    <div id="emergencyBanner" class="alert alert-danger text-center mb-0" style="display: none; border-radius: 0;">
+        <h3 class="mb-1"><i class="fas fa-fire me-2"></i>FIRE ALARM ACTIVATED - EMERGENCY MODE</h3>
+        <p class="mb-0">All EV charging stopped • BMS safety protocols engaged • HVAC shutdown</p>
+    </div>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h1 class="fw-bold mb-2">
+                                <i class="fas fa-bolt me-2"></i>
+                                SmartEMS Pro - VidyutAI 2025
+                            </h1>
+                            <p class="text-gray-300 mb-0">
+                                Cloud-Enabled EMS with RL Optimization & Real-Time IoT Monitoring
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="d-flex justify-content-end gap-3">
+                                <div class="glass-card px-3 py-2 cloud-connected" id="cloudStatus">
+                                    <small class="text-gray-300">Cloud Status</small>
+                                    <div class="fw-bold text-success">
+                                        <i class="fas fa-cloud me-2"></i>MQTT Connected
+                                    </div>
+                                </div>
+                                <div class="glass-card px-3 py-2">
+                                    <small class="text-gray-300">System Status</small>
+                                    <div class="fw-bold text-success" id="systemStatus">
+                                        <i class="fas fa-check-circle me-2"></i>All Systems Normal
+                                    </div>
+                                </div>
+                                <div class="glass-card px-3 py-2">
+                                    <small class="text-gray-300">Active Alerts</small>
+                                    <div class="fw-bold">
+                                        <span id="alertBadge" class="badge bg-success">0</span>
+                                    </div>
+                                </div>
+                                <div class="glass-card px-3 py-2">
+                                    <small class="text-gray-300">Last Update</small>
+                                    <div class="fw-bold" id="currentTime">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Data Streaming Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card data-streaming p-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-1"><i class="fas fa-satellite-dish me-2 text-success"></i>Real-time IoT Data Streaming Active</h6>
+                            <small class="text-muted">Ingesting data from solar, grid, battery, and EV subsystems</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-success" onclick="toggleDataStreaming()">
+                                    <i class="fas fa-pause me-1"></i>Pause Stream
+                                </button>
+                                <button class="btn btn-sm btn-outline-info" onclick="simulateFault()">
+                                    <i class="fas fa-bug me-1"></i>Test Fault
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Monitoring Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="glass-card p-3 text-center">
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--warning);">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <h4 class="fw-bold" id="healthRenewable">94%</h4>
+                    <p class="text-gray-300 mb-0">Renewable Systems</p>
+                    <div class="health-indicator bg-success mt-2" id="renewableBar"></div>
+                    <small class="text-muted" id="renewableStatus">OPTIMAL</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bms-card p-3 text-center">
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--warning);">
+                        <i class="fas fa-battery-three-quarters"></i>
+                    </div>
+                    <h4 class="fw-bold" id="healthBMS">92%</h4>
+                    <p class="text-gray-300 mb-0">Battery Management</p>
+                    <div class="health-indicator bg-warning mt-2" id="batteryBar"></div>
+                    <small class="text-muted">Life: <span id="batteryLife">7.2 years</span></small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="ev-card p-3 text-center">
+                    <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: var(--ev-primary);">
+                        <i class="fas fa-charging-station"></i>
+                    </div>
+                    <h4 class="fw-bold" id="healthEV">91%</h4>
+                    <p class="text-gray-300 mb-0">EV Charging</p>
+                    <div class="health-indicator bg-success mt-2" id="evBar"></div>
+                    <small class="text-muted" id="evStatus">OPTIMIZING</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="fire-card p-3 text-center">
+                    <div class="stat-icon" style="background: rgba(255, 107, 53, 0.2); color: var(--fire-color);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="fw-bold" id="healthSafety">96%</h4>
+                    <p class="text-gray-300 mb-0">Fire Safety</p>
+                    <div class="health-indicator bg-success mt-2" id="safetyBar"></div>
+                    <small class="text-muted" id="safetyStatus">SECURE</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- RL Scheduler & Energy Flow -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="glass-card p-4">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-project-diagram me-2 text-info"></i>
+                        Real-time Energy Flow & RL Optimization
+                    </h4>
+                    <div id="energyFlowDiagram" style="height: 200px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 20px;">
+                        <!-- SVG will be inserted here -->
+                    </div>
+                    <div class="row mt-3 text-center">
+                        <div class="col-md-3">
+                            <div class="fw-bold text-warning" id="rlSavings">$12.45</div>
+                            <small>RL Estimated Savings</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-bold text-success" id="rlEmission">-18.2%</div>
+                            <small>Emission Reduction</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-bold text-info" id="rlEfficiency">94.7%</div>
+                            <small>System Efficiency</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-bold text-primary" id="rlConfidence">89%</div>
+                            <small>RL Confidence</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="rl-card p-4 h-100">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-robot me-2 text-rl"></i>
+                        RL Scheduler Agent
+                    </h4>
+                    <div id="rlRecommendations">
+                        <div class="alert alert-dark mb-2">
+                            <h6>Current RL Recommendation</h6>
+                            <p class="small mb-1">Charge battery to 85% using solar surplus</p>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-success">Save $8.20</small>
+                                <small class="text-info">89% confidence</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Optimization Goal</label>
+                        <select class="form-select" id="rlObjective">
+                            <option value="cost">Minimize Cost</option>
+                            <option value="emission">Minimize Emissions</option>
+                            <option value="reliability">Maximize Reliability</option>
+                            <option value="balanced">Balanced Approach</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-outline-rl w-100 mt-2" onclick="updateRLSchedule()">
+                        <i class="fas fa-sync me-2"></i>Update RL Schedule
+                    </button>
+                    <button class="btn btn-outline-info w-100 mt-2" onclick="viewRLTraining()">
+                        <i class="fas fa-chart-line me-2"></i>View RL Training
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Alert System -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-bell me-2 text-warning"></i>
+                        Real-time Alert System
+                    </h4>
+                    <div id="alertContainer">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>System Initialized:</strong> All subsystems operating normally
+                            <small class="float-end">Just now</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="row g-4">
+            <!-- Left Column: BMS & EV Charging -->
+            <div class="col-lg-6">
+                <!-- BMS Detailed Monitoring -->
+                <div class="glass-card p-4 mb-4">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-car-battery me-2 text-warning"></i>
+                        Battery Management System
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="bms-card p-3 mb-3">
+                                <h6>Battery Pack Overview</h6>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <h3 id="bmsSOC">85%</h3>
+                                        <small>State of Charge</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 id="bmsSOH">92%</h3>
+                                        <small>State of Health</small>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small>Cycle Count: <span id="cycleCount">1,245</span></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bms-card p-3 mb-3">
+                                <h6>Cell Status</h6>
+                                <div class="mb-2">
+                                    <small>Voltage Deviation: <span id="cellDeviation">12mV</span></small>
+                                </div>
+                                <div id="cellStatus" class="mb-2">
+                                    <!-- Cell indicators will be populated -->
+                                </div>
+                                <small class="text-muted">16 cells monitored</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="cellVoltageChart" style="height: 200px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="batteryHealthChart" style="height: 200px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EV Charging Optimization -->
+                <div class="glass-card p-4">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-charging-station me-2 text-primary"></i>
+                        EV Charging Optimization
+                    </h4>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="ev-card p-3 text-center">
+                                <h4 id="activeChargers">3</h4>
+                                <small>Active Stations</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="ev-card p-3 text-center">
+                                <h4 id="availableChargers">5</h4>
+                                <small>Available</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="ev-card p-3 text-center">
+                                <h4 id="totalChargers">8</h4>
+                                <small>Total Stations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="evChargingChart" style="height: 250px;"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: AI Learning & Safety -->
+            <div class="col-lg-6">
+                <!-- AI Learning Insights -->
+                <div class="ai-card p-4 mb-4 learning-pulse">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-brain me-2 text-ai"></i>
+                        AI Learning Engine
+                    </h4>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 id="energySavings">24.7%</h3>
+                                <small>Energy Savings</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 id="costReduction">31.2%</h3>
+                                <small>Cost Reduction</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 id="co2Reduction">18.3%</h3>
+                                <small>CO₂ Reduction</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="learningProgressChart" style="height: 200px;"></div>
+                </div>
+
+                <!-- Fire Safety & Multi-sensor Detection -->
+                <div class="fire-card p-4 mb-4">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-fire-extinguisher me-2 text-danger"></i>
+                        Advanced Fire Detection & Safety
+                    </h4>
+
+                    <!-- Multi-sensor Grid -->
+                    <div class="sensor-grid">
+                        <div class="sensor-card">
+                            <i class="fas fa-thermometer-half text-warning mb-2"></i>
+                            <div class="fw-bold" id="detectorTemp">23.5°C</div>
+                            <small>Temperature</small>
+                        </div>
+                        <div class="sensor-card">
+                            <i class="fas fa-wind text-info mb-2"></i>
+                            <div class="fw-bold" id="detectorCO">3 ppm</div>
+                            <small>CO Levels</small>
+                        </div>
+                        <div class="sensor-card">
+                            <i class="fas fa-leaf text-success mb-2"></i>
+                            <div class="fw-bold" id="detectorAQ">92%</div>
+                            <small>Air Quality</small>
+                        </div>
+                        <div class="sensor-card">
+                            <i class="fas fa-smog text-secondary mb-2"></i>
+                            <div class="fw-bold" id="detectorSmoke">0.2%</div>
+                            <small>Smoke</small>
+                        </div>
+                    </div>
+
+                    <!-- EMERGENCY BUTTONS -->
+                    <button id="testEmergencyBtn" class="btn btn-danger w-100 mb-2 mt-3">
+                        <i class="fas fa-fire me-2"></i>TEST EMERGENCY RESPONSE
+                    </button>
+
+                    <button id="clearEmergencyBtn" class="btn btn-success w-100" style="display: none;">
+                        <i class="fas fa-check me-2"></i>CLEAR EMERGENCY
+                    </button>
+                </div>
+
+                <!-- Active Charging Sessions -->
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-car me-2 text-primary"></i>
+                        Active Charging Sessions
+                    </h5>
+                    <div id="activeSessions">
+                        <!-- Sessions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud Diagnostics & Advanced Analytics -->
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="glass-card p-4">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-chart-line me-2 text-success"></i>
+                        Cloud Diagnostics & Performance Analytics
+                    </h4>
+                    <div id="performanceChart" style="height: 250px;"></div>
+                    <div class="row text-center mt-3">
+                        <div class="col-md-3">
+                            <div class="fw-bold text-warning" id="v2gRevenue">$8.20</div>
+                            <small>V2G Revenue Today</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-bold text-info" id="totalSavings">$45.80</div>
+                            <small>Total Savings</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-bold text-success" id="carbonSaved">128kg</div>
+                            <small>CO₂ Saved</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-bold text-primary" id="renewableUsage">85%</div>
+                            <small>Renewable Usage</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <h4 class="fw-bold mb-3">
+                        <i class="fas fa-diagnoses me-2 text-warning"></i>
+                        Advanced Diagnostics Panel
+                    </h4>
+                    <div id="diagnosticsPanel">
+                        <div class="alert alert-dark mb-2">
+                            <h6>Battery Health</h6>
+                            <p class="small mb-1">State of Health: 92% - Optimal</p>
+                            <small class="text-success">No maintenance required</small>
+                        </div>
+                        <div class="alert alert-dark mb-2">
+                            <h6>Solar Inverter</h6>
+                            <p class="small mb-1">Efficiency: 94.7% - Excellent</p>
+                            <small class="text-success">Operating optimally</small>
+                        </div>
+                        <div class="alert alert-dark mb-2">
+                            <h6>EV Chargers</h6>
+                            <p class="small mb-1">All stations: Operational</p>
+                            <small class="text-success">No faults detected</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-warning w-100 mt-2" onclick="runFullDiagnostics()">
+                        <i class="fas fa-stethoscope me-2"></i>Run Full Diagnostics
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="smartems-enhanced.js"></script>
+</body>
+</html>
